@@ -1,6 +1,7 @@
 CXX=g++
 CXX_FLAGS = -O3 -DCPU_ONLY
 LINK_FLAGS = -lcaffe \
+			 -lopenblas \
 			 -lglog
 
 MODEL   = ../model/asr.prototxt
@@ -24,7 +25,7 @@ $(EXEC): $(OBJECTS) Makefile
 # test
 test: CXX_FLAGS += -DTESTING
 test: all
-	@OPENBLAS_NUM_THREADS=1 ./$(EXEC) $(MODEL) $(WEIGHTS) $(INPUT)
+	@./$(EXEC) $(MODEL) $(WEIGHTS) $(INPUT)
 
 # To remove generated files
 clean:
