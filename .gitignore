@@ -1,0 +1,15 @@
+# Object files
+*.o
+
+# Executables
+surf-fe
+surf-fd
+gmm_scoring
+stem_porter
+regex_slre
+crf_tag
+dnn_asr
+
+# Datasets
+*/input/*
+*/model/*
