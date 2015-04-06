@@ -2,6 +2,9 @@
 
 import sys, os, re, subprocess
 
+threads = 4
+overlap = 50
+
 def shcmd(cmd):
     subprocess.call(cmd, shell=True)
 
@@ -15,12 +18,12 @@ def run_kernel (k, plat):
     cmd = ''
     if k == 'fe':
         if plat == 'pthread':
-            cmd = './surf-fe ' + str(threads) + ' ../input/2048x2048.jpg'
+            cmd = './surf-fe ' + str(threads) + ' ' + str(overlap) + ' ../input/2048x2048.jpg'
         else:
             cmd = './surf-fe ../input/2048x2048.jpg'
     elif k == 'fd':
         if plat == 'pthread':
-            cmd = './surf-fd ' + str(threads) + ' ../input/2048x2048.jpg'
+            cmd = './surf-fd ' + str(threads) + ' ' + str(overlap) + ' ../input/2048x2048.jpg'
         else:
             cmd = './surf-fd ../input/2048x2048.jpg'
     elif k == 'gmm':
@@ -45,13 +48,13 @@ def run_kernel (k, plat):
             cmd = './crf_tag ../input/model.la ../input/test-input.txt'
     elif k == 'dnn-asr':
         if plat == 'pthread':
-            cmd = 'OPENBLAS_NUM_THREADS=%s ./dnn_asr ../model/asr.prototxt \
-                                                    ../model/asr.caffemodel \
-                                                    ../input/features.in' % threads
+            cmd = './dnn_asr ' + str(threads) + '../model/asr.prototxt \
+                                                 ../model/asr.caffemodel \
+                                                 ../input/features.in'
         else:
-            cmd = 'OPENBLAS_NUM_THREADS=1 ./dnn_asr ../model/asr.prototxt \
-                                                    ../model/asr.caffemodel \
-                                                    ../input/features.in'
+            cmd = './dnn_asr ../model/asr.prototxt \
+                             ../model/asr.caffemodel \
+                             ../input/features.in'
     
     return cmd
 
@@ -61,8 +64,8 @@ def main( args ):
         return
 
     # kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    kernels = [ 'fe']
-    platforms = [ 'baseline']
+    kernels = [ 'dnn-asr']
+    platforms = [ 'baseline', 'pthread']
 
     # top directory of kernels
     kdir = args[1]
@@ -73,8 +76,10 @@ def main( args ):
 
     # for each kernel and platform.
     # uses 'make test' input and config for each kernel
-    pmu_cmd = 'toplev -S --all --core C0 taskset -c 0 '
     root = os.getcwd()
+    for p in platforms:
+        shcmd('mkdir -p %s' % (root + '/' + p))
+
     for k in kernels:
         d = os.getcwd() + '/' + k
         os.chdir(d)
@@ -83,8 +88,14 @@ def main( args ):
             if not os.path.isdir(plat):
                 continue
             os.chdir(plat)
-            for i in range(1, LOOP):
-                cmd = pmu_cmd + run_kernel(k, plat)
+            for i in range(0, LOOP):
+                name = k + '_' + plat
+                shcmd('rm -rf %s' % name)
+                vtune = 'amplxe-cl -collect general-exploration -quiet \
+                                   -allow-multiple-runs \
+                                   -result-dir %s --' % (k + '_' + plat)
+                cmd = vtune + \
+                        ' ' + run_kernel(k, plat)
                 print cmd
                 shcmd(cmd)
             os.chdir(kroot)
