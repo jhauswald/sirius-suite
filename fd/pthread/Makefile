@@ -7,9 +7,10 @@ LINK_FLAGS = -lpthread \
 			 -lopencv_nonfree \
 			 -lopencv_features2d
 
-THREADS = 4
-OVERLAP = 15
-INPUT = ../input/2048x2048.jpg
+THREADS   = 4
+OVERLAP   = 15
+INPUT     = ../input/2048x2048.jpg
+KEYPOINTS = ../input/keypoints_2048x2048.in
 
 # File names
 EXEC = surf-fd
@@ -29,7 +30,7 @@ $(EXEC): $(OBJECTS) Makefile
 # test
 test: CXX_FLAGS += -DTESTING
 test: all
-	@./$(EXEC) $(THREADS) $(OVERLAP) $(INPUT)
+	@./$(EXEC) $(THREADS) $(OVERLAP) $(INPUT) $(KEYPOINTS)
 
 # To remove generated files
 clean:

@@ -182,6 +182,19 @@ int main(int argc, char **argv) {
   STATS_END();
 
 #ifdef TESTING
+  FILE *f = fopen("../input/keypoints.dump", "w");
+
+  for (int i = 0; i < keys.size(); ++i) {
+    vector<KeyPoint> key = keys[i];
+    fprintf(f, "%d\n", (int)key.size());
+    for (int i = 0; i < key.size(); ++i) {
+      fprintf(f, "%f %f %f %f %f %d %d\n", key[i].pt.x, key[i].pt.y, key[i].size,
+          key[i].angle, key[i].response, key[i].octave, key[i].class_id);
+    }
+  }
+
+  fclose(f);
+
   int i = 0, r, c;
   CvRect roi;
   Mat output(img.size().height, img.size().width, img.type(), Scalar(0));

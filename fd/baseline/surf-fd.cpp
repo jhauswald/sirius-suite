@@ -38,25 +38,37 @@
 using namespace cv;
 using namespace std;
 
-vector<Mat> segs;
-vector<vector<KeyPoint> > keys;
-FeatureDetector *detector = new SurfFeatureDetector();
-DescriptorExtractor *extractor = new SurfDescriptorExtractor();
-int iterations;
+vector<KeyPoint> read_keys(char *input) {
+  ifstream f(input);
+  vector<KeyPoint> keys;
+  float x, y, size, angle, response;
+  int octave, class_id;
 
-vector<KeyPoint> exec_feature(const Mat &img) {
-  vector<KeyPoint> keypoints;
-  detector->detect(img, keypoints);
+  while(f >> x >> y >> size >> angle >> response >> octave >> class_id) {
+      KeyPoint kp;
+      kp.pt.x = x;
+      kp.pt.y = y;
+      kp.size = size;
+      kp.angle = angle;
+      kp.response = response;
+      kp.octave = octave;
+      kp.class_id = class_id;
+      keys.push_back(kp);
+  }
 
-  return keypoints;
+  return keys;
 }
 
 Mat exec_desc(const Mat &img, vector<KeyPoint> keypoints) {
+  DescriptorExtractor *extractor = new SurfDescriptorExtractor();
   Mat descriptors;
 
   extractor->compute(img, keypoints, descriptors);
 
   descriptors.convertTo(descriptors, CV_32F);
+
+  // Clean up
+  delete extractor;
 
   return descriptors;
 }
@@ -64,26 +76,23 @@ Mat exec_desc(const Mat &img, vector<KeyPoint> keypoints) {
 int main(int argc, char **argv) {
   if (argc < 2) {
     fprintf(stderr, "[ERROR] Input file required.\n\n");
-    fprintf(stderr, "Usage: %s [INPUT FILE]\n\n", argv[0]);
+    fprintf(stderr, "Usage: %s [INPUT IMAGE] [INPUT KEYPOINTS]\n\n", argv[0]);
     exit(0);
   }
 
-  // Generate test keys
+  STATS_INIT("kernel", "feature_description");
+  PRINT_STAT_STRING("abrv", "fd");
+
+  // read in image
   Mat img = imread(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
   if (img.empty()) {
     printf("image not found\n");
     exit(-1);
   }
 
-  STATS_INIT("kernel", "feature_description");
-  PRINT_STAT_STRING("abrv", "fd");
-
-  PRINT_STAT_INT("rows", img.rows);
-  PRINT_STAT_INT("columns", img.cols);
-
-  tic();
-  vector<KeyPoint> key = exec_feature(img);
-  PRINT_STAT_DOUBLE("fe", toc());
+  // read in test keypoints
+  vector<KeyPoint> key = read_keys(argv[2]);
+  PRINT_STAT_INT("in_keypoints", (int)key.size());
 
   tic();
   Mat testDesc = exec_desc(img, key);
@@ -99,9 +108,6 @@ int main(int argc, char **argv) {
   fclose(f);
 #endif
 
-  // Clean up
-  delete detector;
-  delete extractor;
 
   return 0;
 }

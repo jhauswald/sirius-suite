@@ -71,9 +71,17 @@ int main(int argc, char **argv) {
   vector<KeyPoint> key = exec_feature(img);
   PRINT_STAT_DOUBLE("fe", toc());
 
-  STATS_END();
+  STATS_END(); 
 
 #ifdef TESTING
+  FILE *f = fopen("../input/keypoints.dump", "w");
+
+  for (int i = 0; i < key.size(); ++i)
+    fprintf(f, "%f %f %f %f %f %d %d\n", key[i].pt.x, key[i].pt.y, key[i].size,
+        key[i].angle, key[i].response, key[i].octave, key[i].class_id);
+
+  fclose(f);
+
   Mat output;
 
   drawKeypoints(img, key, output, CV_RGB(255, 0, 0));

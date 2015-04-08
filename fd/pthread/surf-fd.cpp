@@ -41,50 +41,40 @@ using namespace std;
 int NTHREADS;
 int OVERLAP;
 
-vector<Mat> segs;
-FeatureDetector *detector = new SurfFeatureDetector();
 DescriptorExtractor *extractor = new SurfDescriptorExtractor();
 int iterations;
+vector<Mat> segs;
 vector<vector<KeyPoint> > keys;
 vector<Mat> descs;
 
-vector<KeyPoint> exec_feature(const Mat &img) {
-  vector<KeyPoint> keypoints;
-  detector->detect(img, keypoints);
+vector<vector<KeyPoint> > read_keys(char *input) {
+  ifstream f(input);
+  vector<vector<KeyPoint> > k;
+  float x=0, y=0, size=0, angle=0, response=0;
+  int octave=0, class_id=0;
+  int num_kps=0;
 
-  return keypoints;
-}
+  for(int i = 0; i < segs.size(); ++i) {
+    vector<KeyPoint> keys;
+    f >> num_kps;
+    int read = 0;
+    while(read < num_kps) {
+      f >> x >> y >> size >> angle >> response >> octave >> class_id;
+      KeyPoint kp;
+      kp.pt.x = x;
+      kp.pt.y = y;
+      kp.size = size;
+      kp.angle = angle;
+      kp.response = response;
+      kp.octave = octave;
+      kp.class_id = class_id;
+      keys.push_back(kp);
+      ++read;
+    }
+    k.push_back(keys);
+  }
 
-Mat exec_desc(const Mat &img, vector<KeyPoint> keypoints) {
-  Mat descriptors;
-
-  extractor->compute(img, keypoints, descriptors);
-
-  descriptors.convertTo(descriptors, CV_32F);
-
-  return descriptors;
-}
-
-void *feat_thread(void *tid) {
-  int start, *mytid, end;
-  mytid = (int *)tid;
-  start = (*mytid * iterations);
-  end = start + iterations;
-
-  for (int i = start; i < end; ++i) keys[i] = exec_feature(segs[i]);
-
-  return NULL;
-}
-
-void *desc_thread(void *tid) {
-  int start, *mytid, end;
-  mytid = (int *)tid;
-  start = (*mytid * iterations);
-  end = start + iterations;
-
-  for (int i = start; i < end; ++i) descs[i] = exec_desc(segs[i], keys[i]);
-
-  return NULL;
+  return k;
 }
 
 vector<Mat> segment(const Mat &img) {
@@ -148,10 +138,31 @@ vector<Mat> segment(const Mat &img) {
   return segments;
 }
 
+Mat exec_desc(const Mat &img, vector<KeyPoint> keypoints) {
+  Mat descriptors;
+
+  extractor->compute(img, keypoints, descriptors);
+
+  descriptors.convertTo(descriptors, CV_32F);
+
+  return descriptors;
+}
+
+void *desc_thread(void *tid) {
+  int start, *mytid, end;
+  mytid = (int *)tid;
+  start = (*mytid * iterations);
+  end = start + iterations;
+
+  for (int i = start; i < end; ++i) descs[i] = exec_desc(segs[i], keys[i]);
+
+  return NULL;
+}
+
 int main(int argc, char **argv) {
   if (argc < 4) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
-    fprintf(stderr, "Usage: %s [NUMBER OF THREADS] [OVERLAP] [INPUT FILE]\n\n",
+    fprintf(stderr, "Usage: %s [NUMBER OF THREADS] [OVERLAP] [INPUT IMAGE] [INPUT KEYPOINTS]\n\n",
             argv[0]);
     exit(0);
   }
@@ -162,48 +173,34 @@ int main(int argc, char **argv) {
   NTHREADS = atoi(argv[1]);
   OVERLAP = atoi(argv[2]);
   PRINT_STAT_INT("threads", NTHREADS);
-  // Generate test keys
+
+  // read in test image
   Mat img = imread(argv[3], CV_LOAD_IMAGE_GRAYSCALE);
   if (img.empty()) {
     printf("image not found\n");
     exit(-1);
   }
 
-  int height = img.size().height / NTHREADS;
-  int width = img.size().width / NTHREADS;
-
-  PRINT_STAT_INT("rows", img.rows);
-  PRINT_STAT_INT("columns", img.cols);
-  PRINT_STAT_INT("tile_height", height);
-  PRINT_STAT_INT("tile_width", width);
-  PRINT_STAT_INT("tile_overlap", OVERLAP);
-
-  tic();
+  // make tiles
   segs = segment(img);
-  PRINT_STAT_DOUBLE("tiling", toc());
+
+  // read in test keypoints
+  keys = read_keys(argv[4]);
+  int total = 0;
+  for(int i = 0; i < keys.size(); ++i)
+    total += keys[i].size();
+  PRINT_STAT_INT("in_keypoints", total);
 
   tic();
   int tids[NTHREADS];
   pthread_t threads[NTHREADS];
   pthread_attr_t attr;
-  iterations = (segs.size() / NTHREADS);
-  keys.resize(segs.size());
-  descs.resize(segs.size());
+  iterations = (keys.size() / NTHREADS);
+  descs.resize(keys.size());
   sirius_pthread_attr_init(&attr);
   sirius_pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-  // Keys
-  for (int i = 0; i < NTHREADS; i++) {
-    tids[i] = i;
-    sirius_pthread_create(&threads[i], &attr, feat_thread, (void *)&tids[i]);
-  }
-
-  for (int i = 0; i < NTHREADS; i++) sirius_pthread_join(threads[i], NULL);
-
-  PRINT_STAT_DOUBLE("pthread_fe", toc());
-
   tic();
-  iterations = (segs.size() / NTHREADS);
   sirius_pthread_attr_init(&attr);
   sirius_pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
@@ -229,7 +226,6 @@ int main(int argc, char **argv) {
 #endif
 
   // Clean up
-  delete detector;
   delete extractor;
 
   return 0;
