@@ -38,9 +38,9 @@ def run_kernel (k, plat):
             cmd = './regex_slre ../input/list ../input/questions'
     elif k == 'stemmer':
         if plat == 'pthread':
-            cmd = './stem_porter ' + str(threads) + ' ../input/voc-1M.txt'
+            cmd = './stem_porter 10000000' + str(threads) + ' ../input/voc-10M.txt'
         else:
-            cmd = './stem_porter ../input/voc-1M.txt'
+            cmd = './stem_porter 10000000 ../input/voc-10M.txt'
     elif k == 'crf':
         if plat == 'pthread':
             cmd = './crf_tag ' + str(threads) + ' ../input/model.la ../input/test-input.txt'
@@ -64,7 +64,7 @@ def main( args ):
         return
 
     kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    # kernels = [ 'dnn-asr']
+    kernels = [ 'stemmer']
     platforms = [ 'baseline']
 
     # top directory of kernels
