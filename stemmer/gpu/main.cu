@@ -778,10 +778,8 @@ __global__ void stem_gpu(struct stemmer *stem_list, int words) {
 
 /*--------------------stemmer definition ends here------------------------*/
 
-#define ARRAYSIZE 1000000
 #define A_INC 10000
 
-static int a_max = ARRAYSIZE;
 static int i_max = INC; /* maximum offset in s */
 struct stemmer *stem_list;
 struct stemmer *gpu_stem_list;
@@ -789,6 +787,7 @@ struct stemmer *gpu_stem_list;
 #define LETTER(ch) (isupper(ch) || islower(ch))
 
 int load_data(struct stemmer *stem_list, FILE *f) {
+  static int a_max = WORDS;
   int a_size = 0;
   while (TRUE) {
     int ch = getc(f);
@@ -826,9 +825,9 @@ int load_data(struct stemmer *stem_list, FILE *f) {
 }
 
 int main(int argc, char *argv[]) {
-  if (argc < 2) {
+  if (argc < 3) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
-    fprintf(stderr, "Usage: %s [INPUT FILE]\n\n", argv[0]);
+    fprintf(stderr, "Usage: %s [WORDS] [INPUT FILE]\n\n", argv[0]);
     exit(0);
   }
   /* Timing */
@@ -838,17 +837,18 @@ int main(int argc, char *argv[]) {
   cudaEvent_t eStart, eStop;
   float cuda_elapsedTime;
 
+  int WORDS = atoi(argv[1]);
   // allocate data
   FILE *f;
-  f = fopen(argv[1], "r");
+  f = fopen(argv[2], "r");
   if (f == 0) {
     fprintf(stderr, "File %s not found\n", argv[1]);
     exit(1);
   }
 
-  cudaMallocHost((void **)&stem_list, ARRAYSIZE* sizeof(struct stemmer));
+  cudaMallocHost((void **)&stem_list, WORDS* sizeof(struct stemmer));
 
-  int words = load_data(stem_list, f);
+  int words = load_data(WORDS, stem_list, f);
   PRINT_STAT_INT("words", words);
 
   fclose(f);

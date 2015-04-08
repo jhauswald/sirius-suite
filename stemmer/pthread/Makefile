@@ -3,7 +3,8 @@ LINK_FLAGS = -lpthread
 CXX_FLAGS  = -O3 -fpermissive -Wno-write-strings
 
 THREADS = 4
-INPUT   = ../input/voc.txt
+WORDS   = 1000000
+INPUT   = ../input/voc-1M.txt
 
 # File names
 EXEC = stem_porter
@@ -23,7 +24,7 @@ $(EXEC): $(OBJECTS) Makefile
 # test
 test: CXX_FLAGS += -DTESTING
 test: all
-	@./$(EXEC) $(THREADS) $(INPUT)
+	@./$(EXEC) $(THREADS) $(WORDS) $(INPUT)
 	-@diff -q ../input/$(EXEC).baseline ../input/$(EXEC).pthread
 
 # To remove generated files
