@@ -17,3 +17,6 @@ dnn_asr
 # Misc
 *.csv
 *.txt
+*.err
+*.out
+*.report

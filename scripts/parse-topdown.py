@@ -37,7 +37,7 @@ def main( args ):
             if not os.path.isdir(plat):
                 continue
             os.chdir(plat)
-            name = k + '_' + plat + '.csv'
+            name = 'sirius-suite.report'
             data = get_data(name, metrics)
             print k
             print data

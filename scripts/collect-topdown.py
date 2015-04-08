@@ -48,13 +48,13 @@ def run_kernel (k, plat):
             cmd = './crf_tag ../input/model.la ../input/test-input.txt'
     elif k == 'dnn-asr':
         if plat == 'pthread':
-            cmd = './dnn_asr ' + str(threads) + ' ../model/asr.prototxt \
-                                                 ../model/asr.caffemodel \
-                                                 ../input/features.in'
+            cmd = './dnn_asr ' + str(threads) + ' ../model/asr.prototxt ' \
+                                              + ' ../model/asr.caffemodel' \
+                                              + ' ../input/features.in'
         else:
-            cmd = './dnn_asr ../model/asr.prototxt \
-                             ../model/asr.caffemodel \
-                             ../input/features.in'
+            cmd = './dnn_asr'  + ' ../model/asr.prototxt ' \
+                               + ' ../model/asr.caffemodel' \
+                               + ' ../input/features.in'
     
     return cmd
 
@@ -82,16 +82,15 @@ def main( args ):
             if not os.path.isdir(plat):
                 continue
             os.chdir(plat)
-            name = k + '_' + plat + '.csv'
             vtune = 'amplxe-cl -collect general-exploration -quiet taskset -c 1 '
-            cmd = vtune + ' ' + run_kernel(k, plat)
+            cmd = vtune + ' ' + run_kernel(k, plat) + ' > sirius-suite.out 2> sirius-suite.err'
             print cmd
             shcmd(cmd)
-            report ='amplxe-cl -report summary -report-output %s -format csv -csv-delimiter ,' % name
+            report ='amplxe-cl -report summary -report-output sirius-suite.report -format csv -csv-delimiter ,'
             shcmd(report)
-            # remove leading/trailing spaces
-            shcmd("cat %s | sed 's/^[ \t]*//;s/[ \t]*$//' > temp.txt && mv temp.txt %s" % (name, name))
-            shcmd('rm -rf r000ge')
+            # remove leading/trailing spaces, fucking vtune
+            shcmd("cat sirius-suite.report | sed 's/^[ \t]*//;s/[ \t]*$//' > temp.txt && mv temp.txt sirius-suite.report")
+            shcmd('rm -rf r00*')
             os.chdir(kroot)
         os.chdir(root)
 
