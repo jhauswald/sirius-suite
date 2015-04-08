@@ -13,3 +13,7 @@ dnn_asr
 # Datasets
 */input/*
 */model/*
+
+# Misc
+*.csv
+*.txt

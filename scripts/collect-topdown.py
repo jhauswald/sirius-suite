@@ -43,12 +43,12 @@ def run_kernel (k, plat):
             cmd = './stem_porter ../input/voc-1M.txt'
     elif k == 'crf':
         if plat == 'pthread':
-            cmd = './crf_tag ' + str(threads) + '../input/model.la ../input/test-input.txt'
+            cmd = './crf_tag ' + str(threads) + ' ../input/model.la ../input/test-input.txt'
         else:
             cmd = './crf_tag ../input/model.la ../input/test-input.txt'
     elif k == 'dnn-asr':
         if plat == 'pthread':
-            cmd = './dnn_asr ' + str(threads) + '../model/asr.prototxt \
+            cmd = './dnn_asr ' + str(threads) + ' ../model/asr.prototxt \
                                                  ../model/asr.caffemodel \
                                                  ../input/features.in'
         else:
@@ -59,26 +59,20 @@ def run_kernel (k, plat):
     return cmd
 
 def main( args ):
-    if len(args) < 3:
-        print "Usage: ./collect-stats.py <top-directory of kernels> <# of runs>"
+    if len(args) < 2:
+        print "Usage: ./collect-stats.py <top-directory of kernels>"
         return
 
-    # kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    kernels = [ 'dnn-asr']
-    platforms = [ 'baseline', 'pthread']
+    kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
+    # kernels = [ 'dnn-asr']
+    platforms = [ 'baseline']
 
     # top directory of kernels
     kdir = args[1]
     os.chdir(kdir)
 
-    # how many times to run each kernel
-    LOOP = int(args[2])
-
     # for each kernel and platform.
-    # uses 'make test' input and config for each kernel
     root = os.getcwd()
-    for p in platforms:
-        shcmd('mkdir -p %s' % (root + '/' + p))
 
     for k in kernels:
         d = os.getcwd() + '/' + k
@@ -88,16 +82,16 @@ def main( args ):
             if not os.path.isdir(plat):
                 continue
             os.chdir(plat)
-            for i in range(0, LOOP):
-                name = k + '_' + plat
-                shcmd('rm -rf %s' % name)
-                vtune = 'amplxe-cl -collect general-exploration -quiet \
-                                   -allow-multiple-runs \
-                                   -result-dir %s --' % (k + '_' + plat)
-                cmd = vtune + \
-                        ' ' + run_kernel(k, plat)
-                print cmd
-                shcmd(cmd)
+            name = k + '_' + plat + '.csv'
+            vtune = 'amplxe-cl -collect general-exploration -quiet taskset -c 1 '
+            cmd = vtune + ' ' + run_kernel(k, plat)
+            print cmd
+            shcmd(cmd)
+            report ='amplxe-cl -report summary -report-output %s -format csv -csv-delimiter ,' % name
+            shcmd(report)
+            # remove leading/trailing spaces
+            shcmd("cat %s | sed 's/^[ \t]*//;s/[ \t]*$//' > temp.txt && mv temp.txt %s" % (name, name))
+            shcmd('rm -rf r000ge')
             os.chdir(kroot)
         os.chdir(root)
 
