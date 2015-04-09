@@ -1,10 +1,14 @@
 CXX = g++
 LINK_FLAGS = -lpthread
 CXX_FLAGS = -O3 -fpermissive
+LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -ldl
+CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/
 
-THREADS   = 4
-LIST      = ../input/list
-QUESTIONS = ../input/questions
+THREADS       = 4
+NUM_PATTERNS  = 100
+PATTERNS      = ../input/patterns.txt
+NUM_QUESTIONS = 100
+QUESTIONS     = ../input/questions.txt
 
 # File names
 EXEC = regex_slre
@@ -24,7 +28,7 @@ $(EXEC): $(OBJECTS) Makefile
 # test
 test: CXX_FLAGS += -DTESTING
 test: all
-	@./$(EXEC) $(THREADS) $(LIST) $(QUESTIONS)
+	@./$(EXEC) $(THREADS) $(NUM_PATTERNS) $(PATTERNS) $(NUM_QUESTIONS) $(QUESTIONS)
 	-@diff -q ../input/$(EXEC).baseline ../input/$(EXEC).pthread
 
 # To remove generated files
