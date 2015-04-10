@@ -101,6 +101,7 @@ void computeScore_seq(float *feature_vect, float *means_vect, float *precs_vect,
 }
 
 int main(int argc, char *argv[]) {
+  __itt_pause();
   if (argc < 3) {
     fprintf(stderr, "[ERROR] Input file required.\n\n");
     fprintf(stderr, "Usage: %s [NUM SCORES] [INPUT FILE]\n\n", argv[0]);

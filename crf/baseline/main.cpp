@@ -12,6 +12,8 @@
 
 #include "../../utils/timer.h"
 
+#include "ittnotify.h"
+
 using namespace std;
 
 bool PERFORM_TOKENIZATION = false;
@@ -66,6 +68,7 @@ struct TagProb {
 };
 
 int main(int argc, char **argv) {
+  __itt_pause();
   if (argc < 2) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
     fprintf(stderr, "Usage: %s [MODEL] [INPUT DATA]\n\n", argv[0]);
@@ -127,6 +130,7 @@ int main(int argc, char **argv) {
   }
   PRINT_STAT_INT("sentences", (int)sentences.size());
 
+  __itt_resume();
   tic();
   for (size_t s = 0; s < sentences.size(); ++s) {
     vector<Token> vt = sentences[s];
@@ -205,6 +209,7 @@ int main(int argc, char **argv) {
     }
   }
   PRINT_STAT_DOUBLE("crf", toc());
+  __itt_pause();
 
 #ifdef TESTING
   FILE *f = fopen("../input/crf_tag.baseline", "w");

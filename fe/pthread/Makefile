@@ -6,6 +6,8 @@ LINK_FLAGS = -lopencv_core \
 			 -lopencv_nonfree \
 			 -lopencv_features2d \
 			 -lpthread
+LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl
+CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/
 
 THREADS = 4
 OVERLAP = 50

@@ -21,12 +21,15 @@
 #include <iostream>
 #include <cmath>
 #include <glog/logging.h>
+#include <cblas.h>
 
 #include "caffe/caffe.hpp"
 
 #include "../../utils/memoryman.h"
 #include "../../utils/pthreadman.h"
 #include "../../utils/timer.h"
+
+#include "ittnotify.h"
 
 #define FEATURE_VEC_SIZE 440
 #define PROB_VEC_SIZE 1706
@@ -96,6 +99,7 @@ int load_features(float** in, string feature_file, int vec_size) {
 }
 
 int main(int argc, char** argv) {
+  __itt_pause();
   if (argc < 4) {
     fprintf(stderr, "[ERROR] Input file required.\n\n");
     fprintf(stderr, "Usage: %s [NETWORK] [WEIGHTS] [INPUT FEATURES]\n\n",
@@ -136,9 +140,11 @@ int main(int argc, char** argv) {
   int out_size = feat_cnt * PROB_VEC_SIZE;
   float* dnn_output = (float*)sirius_malloc(sizeof(float) * out_size);
 
+  __itt_resume();
   tic();
   dnn_fwd(feature_input, in_size, dnn_output, out_size, dnn);
   PRINT_STAT_DOUBLE("pthread_dnn-asr", toc());
+  __itt_pause();
 
   STATS_END();
 

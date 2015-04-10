@@ -33,6 +33,8 @@
 #include "opencv2/nonfree/gpu.hpp"
 #include "opencv2/objdetect/objdetect.hpp"
 
+#include "ittnotify.h"
+
 using namespace cv;
 using namespace std;
 
@@ -48,6 +50,7 @@ vector<KeyPoint> exec_feature(const Mat &img) {
 }
 
 int main(int argc, char **argv) {
+  __itt_pause();
   if (argc < 2) {
     fprintf(stderr, "[ERROR] Input file required.\n\n");
     fprintf(stderr, "Usage: %s [INPUT FILE]\n\n", argv[0]);
@@ -67,9 +70,11 @@ int main(int argc, char **argv) {
   PRINT_STAT_INT("rows", img.rows);
   PRINT_STAT_INT("columns", img.cols);
 
+  __itt_resume();
   tic();
   vector<KeyPoint> key = exec_feature(img);
   PRINT_STAT_DOUBLE("fe", toc());
+  __itt_pause();
 
   STATS_END();
 

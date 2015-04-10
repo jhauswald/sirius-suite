@@ -2,6 +2,9 @@
 
 import sys, os, re, subprocess
 
+threads = 4
+overlap = 50
+
 def shcmd(cmd):
     subprocess.call(cmd, shell=True)
 
@@ -14,39 +17,48 @@ def run_kernel (k, plat):
     '''To change inputs or # of threads'''
     cmd = ''
     if k == 'fe':
-        if plat == 'pthread':
-            cmd = './surf-fe ' + str(threads) + ' ../input/2048x2048.jpg'
+        inp = ' ../input/2048x2048.jpg'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './surf-fe ' + str(threads) + ' ' + str(overlap) + inp
         else:
-            cmd = './surf-fe ../input/2048x2048.jpg'
+            cmd = './surf-fe' + inp
     elif k == 'fd':
-        if plat == 'pthread':
-            cmd = './surf-fd ' + str(threads) + ' ../input/2048x2048.jpg'
+        inp = ' ../input/2048x2048.jpg'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './surf-fd ' + str(threads) + ' ' + str(overlap) + inp
         else:
-            cmd = './surf-fd ../input/2048x2048.jpg'
+            cmd = './surf-fd' + inp
     elif k == 'gmm':
-        if plat == 'pthread':
-            cmd = './gmm_scoring ' + str(threads) + ' ../input/gmm_data.txt'
+        inp = ' 100 ../input/gmm_data.txt'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './gmm_scoring ' + str(threads) + inp
         else:
-            cmd = './gmm_scoring ../input/gmm_data.txt'
+            cmd = './gmm_scoring ' + inp
     elif k == 'regex':
-        if plat == 'pthread':
-            cmd = './regex_slre ' + str(threads) + ' ../input/list ../input/questions'
+        inp = ' 100 ../input/patterns.txt 10000 ../input/questions-10k.txt'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './regex_slre ' + str(threads) + inp
         else:
-            cmd = './regex_slre ../input/list ../input/questions'
+            cmd = './regex_slre' + inp
     elif k == 'stemmer':
-        if plat == 'pthread':
-            cmd = './stem_porter ' + str(threads) + ' ../input/voc-1M.txt'
+        inp = ' 50000000 ../input/voc-50M.txt'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './stem_porter ' + str(threads) + inp
         else:
-            cmd = './stem_porter ../input/voc-1M.txt'
+            cmd = './stem_porter' + inp
     elif k == 'crf':
-        cmd = './test-crf.sh'
-    elif k == 'dnn-asr':
-        if plat == 'pthread':
-            cmd = './surf-fd ' + str(threads) + ' ../input/2048x2048.jpg'
+        inp = ' ../input/model.la ../input/test-input.txt'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './crf_tag ' + str(threads) + inp
         else:
-            cmd = './surf-fd ../input/2048x2048.jpg'
-
-    shcmd(cmd)
+            cmd = './crf_tag' + inp
+    elif k == 'dnn-asr':
+        inp = ' ../model/asr.prototxt ../model/asr.caffemodel ../input/features.in'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './dnn_asr ' + str(threads) + inp
+        else:
+            cmd = './dnn_asr' + inp    
+    return cmd
         
 def main( args ):
     if len(args) < 3:
@@ -54,7 +66,8 @@ def main( args ):
         return
 
     kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    platforms = [ 'baseline', 'pthread', 'gpu' ]
+    platforms = [ 'baseline', 'cores', 'smt' ]
+    platforms = [ 'cores' ]
 
     # top directory of kernels
     kdir = args[1]
@@ -64,22 +77,31 @@ def main( args ):
     LOOP = int(args[2])
 
     # remove GPU if no NVCC installed
-    if shcom("which nvcc") == "":
-        platforms = [ 'baseline', 'pthread']
+    # if shcom("which nvcc") == "":
+    #     platforms = [ 'baseline', 'pthread']
 
     # for each kernel and platform.
-    # uses 'make test' input and config for each kernel
     root = os.getcwd()
     for k in kernels:
         d = os.getcwd() + '/' + k
         os.chdir(d)
         kroot = os.getcwd() 
         for plat in platforms:
-            if not os.path.isdir(plat):
-                continue
-            os.chdir(plat)
-            for i in range(1, LOOP):
-                shcmd('make test')
+            fname = 'sirius-suite-%s' % plat
+            if plat == 'smt' or plat == 'cores':
+                os.chdir('pthread')
+            else:
+                os.chdir(plat)
+            for i in range(0, LOOP):
+                if plat == 'cores':
+                    task = 'taskset -c 0,1,2,3 '
+                elif plat == 'smt':
+                    task = 'taskset -c 0,1,4,5 '
+                else:
+                    task = 'taskset -c 0 '
+                # cmd = task + ' ' + run_kernel(k, plat) + ' > %s.out 2> %s.err' % (fname, fname)
+                cmd = task + ' ' + run_kernel(k, plat)
+                shcmd(cmd)
             os.chdir(kroot)
         os.chdir(root)
 

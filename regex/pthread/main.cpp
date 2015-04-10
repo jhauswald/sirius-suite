@@ -68,6 +68,7 @@ int fill(FILE *f, char **toFill, int *bufLen, int len) {
 }
 
 int main(int argc, char *argv[]) {
+  __itt_pause();
   if (argc < 6) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
     fprintf(stderr, "Usage: %s [THREADS] [NUM PATTERNS] [PATTERN FILE] [NUM QUESTIONS] [QUESTION FILE]\n\n", argv[0]);

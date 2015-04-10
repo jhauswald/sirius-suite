@@ -14,6 +14,8 @@
 #include "../../utils/pthreadman.h"
 #include "../../utils/timer.h"
 
+#include "ittnotify.h"
+
 using namespace std;
 
 bool PERFORM_TOKENIZATION = false;
@@ -146,6 +148,7 @@ void *crf_thread(void *tid) {
 }
 
 int main(int argc, char **argv) {
+  __itt_pause();
   if (argc < 4) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
     fprintf(stderr, "Usage: %s [THREADS] [MODEL] [INPUT DATA]\n\n", argv[0]);
@@ -211,6 +214,7 @@ int main(int argc, char **argv) {
   }
   PRINT_STAT_INT("sentences", (int)sentences.size());
 
+  __itt_resume();
   tic();
   iterations = (int)sentences.size() / NTHREADS;
   int tids[NTHREADS];
@@ -226,6 +230,7 @@ int main(int argc, char **argv) {
 
   for (int i = 0; i < NTHREADS; i++) sirius_pthread_join(threads[i], NULL);
   PRINT_STAT_DOUBLE("pthread_crf", toc());
+  __itt_pause();
 
 #ifdef TESTING
   FILE *f = fopen("../input/crf_tag.pthread", "w");

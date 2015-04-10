@@ -26,9 +26,10 @@ def sirius_print(data, metrics):
 
 def main( args ):
     kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    # kernels = [ 'dnn-asr']
-    platforms = [ 'baseline']
-    metrics = ['Kernel', 'CPI Rate', 'Front-end Bound', 'Bad Speculation', 'Retiring', 'Back-End Bound']
+    kernels = [ 'fe', 'fd', 'regex', 'stemmer', 'crf', 'dnn-asr']
+    # kernels = [ 'regex']
+    platforms = ['baseline', 'smt', 'cores']
+    metrics = ['Platform', 'Kernel', 'CPI Rate', 'Front-end Bound', 'Bad Speculation', 'Retiring', 'Back-End Bound']
 
     # top directory of kernels
     kdir = args[1]
@@ -50,13 +51,16 @@ def main( args ):
         os.chdir(d)
         kroot = os.getcwd() 
         for plat in platforms:
-            if not os.path.isdir(plat):
-                continue
-            os.chdir(plat)
-            name = 'sirius-suite.report'
-            data = get_data(name, metrics)
-            data['Kernel'] = k
-            sirius_print(data, metrics)
+            if plat == 'smt' or plat == 'cores':
+                os.chdir('pthread')
+            else:
+                os.chdir(plat)
+            fname = 'sirius-suite-%s.report' % plat
+            if os.path.isfile(fname):
+                data = get_data(fname, metrics)
+                data['Kernel'] = k
+                data['Platform'] = plat
+                sirius_print(data, metrics)
             os.chdir(kroot)
         os.chdir(root)
 

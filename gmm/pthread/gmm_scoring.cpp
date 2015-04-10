@@ -143,6 +143,7 @@ void *computeScore_thread(void *tid) {
 }
 
 int main(int argc, char *argv[]) {
+  __itt_pause();
   if (argc < 4) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
     fprintf(stderr, "Usage: %s [NUMBER OF THREADS] [SCORES] [INPUT FILE]\n\n", argv[0]);

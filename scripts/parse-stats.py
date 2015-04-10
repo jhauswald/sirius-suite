@@ -4,14 +4,6 @@ import sys, os, re, subprocess, json
 from collections import defaultdict
 import numpy as np
 
-def shcmd(cmd):
-    subprocess.call(cmd, shell=True)
-
-def shcom(cmd):
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    out = p.communicate()[0]
-    return out
-
 def main( args ):
     if len(args) < 2:
         print "Usage: ./parse-stats.py <.json file>"
@@ -21,7 +13,7 @@ def main( args ):
     data = json.loads(open(file).read())
 
     kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    platforms = [ 'baseline', 'pthread', 'gpu' ]
+    platforms = [ 'baseline', 'pthread' ]
 
     # dictionary of lists
     dict_of_lists = defaultdict(list)
@@ -53,12 +45,12 @@ def main( args ):
         print "%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f" % (base, 'pthread', avg[pth], median[pth],
                                                stddev[pth], mn[pth],
                                                mx[pth],float(avg[base]/avg[pth]))
-        gpu = 'gpu_' + base
-        if gpu == 'gpu_regex' or gpu == 'gpu_crf':
-            continue
-        print "%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f" % (base, 'gpu', avg[gpu], median[gpu],
-                                               stddev[gpu], mn[gpu],
-                                               mx[gpu], float(avg[base]/avg[gpu]))
+        # gpu = 'gpu_' + base
+        # if gpu == 'gpu_regex' or gpu == 'gpu_crf':
+        #     continue
+        # print "%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f" % (base, 'gpu', avg[gpu], median[gpu],
+        #                                        stddev[gpu], mn[gpu],
+        #                                        mx[gpu], float(avg[base]/avg[gpu]))
 
 if __name__=='__main__':
     sys.exit(main(sys.argv))

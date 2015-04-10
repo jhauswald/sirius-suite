@@ -17,45 +17,47 @@ def run_kernel (k, plat):
     '''To change inputs or # of threads'''
     cmd = ''
     if k == 'fe':
-        if plat == 'pthread':
-            cmd = './surf-fe ' + str(threads) + ' ' + str(overlap) + ' ../input/2048x2048.jpg'
+        inp = ' ../input/2048x2048.jpg'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './surf-fe ' + str(threads) + ' ' + str(overlap) + inp
         else:
-            cmd = './surf-fe ../input/2048x2048.jpg'
+            cmd = './surf-fe' + inp
     elif k == 'fd':
-        if plat == 'pthread':
-            cmd = './surf-fd ' + str(threads) + ' ' + str(overlap) + ' ../input/2048x2048.jpg'
+        inp = ' ../input/2048x2048.jpg'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './surf-fd ' + str(threads) + ' ' + str(overlap) + inp
         else:
-            cmd = './surf-fd ../input/2048x2048.jpg'
+            cmd = './surf-fd' + inp
     elif k == 'gmm':
-        if plat == 'pthread':
-            cmd = './gmm_scoring ' + str(threads) + ' ../input/gmm_data.txt'
+        inp = ' 100 ../input/gmm_data.txt'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './gmm_scoring ' + str(threads) + inp
         else:
-            cmd = './gmm_scoring ../input/gmm_data.txt'
+            cmd = './gmm_scoring ' + inp
     elif k == 'regex':
-        if plat == 'pthread':
-            cmd = './regex_slre ' + str(threads) + ' ../input/list ../input/questions'
+        inp = ' 100 ../input/patterns.txt 10000 ../input/questions-10k.txt'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './regex_slre ' + str(threads) + inp
         else:
-            cmd = './regex_slre ../input/list ../input/questions'
+            cmd = './regex_slre' + inp
     elif k == 'stemmer':
-        if plat == 'pthread':
-            cmd = './stem_porter 10000000' + str(threads) + ' ../input/voc-10M.txt'
+        inp = ' 50000000 ../input/voc-50M.txt'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './stem_porter ' + str(threads) + inp
         else:
-            cmd = './stem_porter 10000000 ../input/voc-10M.txt'
+            cmd = './stem_porter' + inp
     elif k == 'crf':
-        if plat == 'pthread':
-            cmd = './crf_tag ' + str(threads) + ' ../input/model.la ../input/test-input.txt'
+        inp = ' ../input/model.la ../input/test-input.txt'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './crf_tag ' + str(threads) + inp
         else:
-            cmd = './crf_tag ../input/model.la ../input/test-input.txt'
+            cmd = './crf_tag' + inp
     elif k == 'dnn-asr':
-        if plat == 'pthread':
-            cmd = './dnn_asr ' + str(threads) + ' ../model/asr.prototxt ' \
-                                              + ' ../model/asr.caffemodel' \
-                                              + ' ../input/features.in'
+        inp = ' ../model/asr.prototxt ../model/asr.caffemodel ../input/features.in'
+        if plat == 'smt' or plat == 'cores':
+            cmd = './dnn_asr ' + str(threads) + inp
         else:
-            cmd = './dnn_asr'  + ' ../model/asr.prototxt ' \
-                               + ' ../model/asr.caffemodel' \
-                               + ' ../input/features.in'
-    
+            cmd = './dnn_asr' + inp    
     return cmd
 
 def main( args ):
@@ -63,9 +65,9 @@ def main( args ):
         print "Usage: ./collect-stats.py <top-directory of kernels>"
         return
 
-    kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    kernels = [ 'stemmer']
-    platforms = [ 'baseline']
+    kernels = ['fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
+    kernels = ['fe', 'fd', 'regex', 'stemmer', 'crf', 'dnn-asr']
+    platforms = ['baseline', 'cores', 'smt']
 
     # top directory of kernels
     kdir = args[1]
@@ -79,17 +81,24 @@ def main( args ):
         os.chdir(d)
         kroot = os.getcwd() 
         for plat in platforms:
-            if not os.path.isdir(plat):
-                continue
-            os.chdir(plat)
-            vtune = 'amplxe-cl -collect general-exploration -quiet taskset -c 1 '
-            cmd = vtune + ' ' + run_kernel(k, plat) + ' > sirius-suite.out 2> sirius-suite.err'
+            fname = 'sirius-suite-%s' % plat
+            if plat == 'smt' or plat == 'cores':
+                os.chdir('pthread')
+            else:
+                os.chdir(plat)
+            if plat == 'cores':
+                vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0,1,2,3 '
+            elif plat == 'smt':
+                vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0,1,4,5 '
+            else:
+                vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0 '
+            cmd = vtune + ' ' + run_kernel(k, plat) + ' > %s.out 2> %s.err' % (fname, fname)
             print cmd
             shcmd(cmd)
-            report ='amplxe-cl -report summary -report-output sirius-suite.report -format csv -csv-delimiter ,'
+            report ='amplxe-cl -report summary -report-output %s.report -format csv -csv-delimiter ,' % fname
             shcmd(report)
             # remove leading/trailing spaces, fucking vtune
-            shcmd("cat sirius-suite.report | sed 's/^[ \t]*//;s/[ \t]*$//' > temp.txt && mv temp.txt sirius-suite.report")
+            shcmd("cat %s.report| sed 's/^[ \t]*//;s/[ \t]*$//' > temp.txt && mv temp.txt %s.report" % (fname, fname))
             shcmd('rm -rf r00*')
             os.chdir(kroot)
         os.chdir(root)

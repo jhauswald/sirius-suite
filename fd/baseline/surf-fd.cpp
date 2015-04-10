@@ -35,6 +35,8 @@
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/stitching/stitcher.hpp"
 
+#include "ittnotify.h"
+
 using namespace cv;
 using namespace std;
 
@@ -62,6 +64,7 @@ Mat exec_desc(const Mat &img, vector<KeyPoint> keypoints) {
 }
 
 int main(int argc, char **argv) {
+  __itt_pause();
   if (argc < 2) {
     fprintf(stderr, "[ERROR] Input file required.\n\n");
     fprintf(stderr, "Usage: %s [INPUT FILE]\n\n", argv[0]);
@@ -85,9 +88,11 @@ int main(int argc, char **argv) {
   vector<KeyPoint> key = exec_feature(img);
   PRINT_STAT_DOUBLE("fe", toc());
 
+  __itt_resume();
   tic();
   Mat testDesc = exec_desc(img, key);
   PRINT_STAT_DOUBLE("fd", toc());
+  __itt_pause();
 
   STATS_END();
 

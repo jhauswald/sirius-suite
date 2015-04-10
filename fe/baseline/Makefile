@@ -5,6 +5,8 @@ LINK_FLAGS = -lopencv_core \
 			 -lopencv_imgproc \
 			 -lopencv_nonfree \
 			 -lopencv_features2d
+LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl
+CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/
 
 INPUT = ../input/2048x2048.jpg
 

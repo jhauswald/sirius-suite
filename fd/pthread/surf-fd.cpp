@@ -35,6 +35,8 @@
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/stitching/stitcher.hpp"
 
+#include "ittnotify.h"
+
 using namespace cv;
 using namespace std;
 
@@ -149,6 +151,7 @@ vector<Mat> segment(const Mat &img) {
 }
 
 int main(int argc, char **argv) {
+  __itt_pause();
   if (argc < 4) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
     fprintf(stderr, "Usage: %s [NUMBER OF THREADS] [OVERLAP] [INPUT FILE]\n\n",
@@ -202,6 +205,7 @@ int main(int argc, char **argv) {
 
   PRINT_STAT_DOUBLE("pthread_fe", toc());
 
+  __itt_resume();
   tic();
   iterations = (segs.size() / NTHREADS);
   sirius_pthread_attr_init(&attr);
@@ -214,6 +218,7 @@ int main(int argc, char **argv) {
 
   for (int i = 0; i < NTHREADS; i++) sirius_pthread_join(threads[i], NULL);
   PRINT_STAT_DOUBLE("pthread_fd", toc());
+  __itt_pause();
 
   STATS_END();
 

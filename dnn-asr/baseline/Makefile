@@ -3,6 +3,8 @@ CXX_FLAGS = -O3 -DCPU_ONLY
 LINK_FLAGS = -lcaffe \
 			 -lopenblas \
 			 -lglog
+LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl
+CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/
 
 MODEL   = ../model/asr.prototxt
 WEIGHTS = ../model/asr.caffemodel

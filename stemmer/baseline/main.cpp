@@ -9,6 +9,8 @@
 #include "../../utils/memoryman.h"
 #include "porter.h"
 
+#include "ittnotify.h"
+
 static char *s; /* buffer for words to be stemmed */
 
 #define INC 50          /* size units in which s is increased */
@@ -68,6 +70,7 @@ int load_data(int WORDS, struct stemmer **stem_list, FILE *f) {
 }
 
 int main(int argc, char *argv[]) {
+  __itt_pause();
   if (argc < 3) {
     fprintf(stderr, "[ERROR] Input file required.\n\n");
     fprintf(stderr, "Usage: %s [WORDS] [INPUT FILE]\n\n", argv[0]);
@@ -94,10 +97,14 @@ int main(int argc, char *argv[]) {
   fclose(f);
   PRINT_STAT_INT("words", words);
 
+  __itt_resume();
+
   tic();
   for (int i = 0; i < words; i++)
     stem_list[i]->b[stem2(stem_list[i]) + 1] = 0;
   PRINT_STAT_DOUBLE("stemmer", toc());
+
+  __itt_pause();
 
   STATS_END();
 

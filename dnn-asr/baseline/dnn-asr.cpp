@@ -29,6 +29,8 @@
 #include "../../utils/timer.h"
 #include "../../utils/memoryman.h"
 
+#include "ittnotify.h"
+
 #define FEATURE_VEC_SIZE 440  // Number of floats in one input feature vector
 #define PROB_VEC_SIZE 1706  // Number of floats in one output probability vector
 
@@ -97,6 +99,7 @@ int load_features(float** in, string feature_file, int vec_size) {
 }
 
 int main(int argc, char** argv) {
+  __itt_pause();
   if (argc < 4) {
     fprintf(stderr, "[ERROR] Input file required.\n\n");
     fprintf(stderr, "Usage: %s [NETWORK] [WEIGHTS] [INPUT FEATURES]\n\n",
@@ -133,9 +136,11 @@ int main(int argc, char** argv) {
   int out_size = feat_cnt * PROB_VEC_SIZE;
   float* dnn_output = (float*)sirius_malloc(sizeof(float) * out_size);
 
+  __itt_resume();
   tic();
   dnn_fwd(feature_input, in_size, dnn_output, out_size, dnn);
   PRINT_STAT_DOUBLE("dnn-asr", toc());
+  __itt_pause();
 
   STATS_END();
 

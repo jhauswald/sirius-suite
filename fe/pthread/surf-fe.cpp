@@ -36,6 +36,8 @@
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/stitching/stitcher.hpp"
 
+#include "ittnotify.h"
+
 using namespace cv;
 using namespace std;
 
@@ -160,6 +162,7 @@ int main(int argc, char **argv) {
   segs = segment(img);
   PRINT_STAT_DOUBLE("tiling", toc());
 
+  __itt_resume();
   tic();
   int tids[NTHREADS];
   pthread_t threads[NTHREADS];
@@ -178,6 +181,7 @@ int main(int argc, char **argv) {
   for (int i = 0; i < NTHREADS; i++) sirius_pthread_join(threads[i], NULL);
 
   PRINT_STAT_DOUBLE("pthread_fe", toc());
+  __itt_pause();
 
   STATS_END();
 
