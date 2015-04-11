@@ -285,8 +285,8 @@ int main(int argc, char *argv[]) {
   sirius_free(score_vect);
   sirius_free(feat_vect);
 
-  sirius_pthread_attr_destroy(&attr);
-  sirius_pthread_exit(NULL);
+  // sirius_pthread_attr_destroy(&attr);
+  // sirius_pthread_exit(NULL);
 
   return 0;
 }

@@ -53,7 +53,7 @@ def run_kernel (k, plat):
         else:
             cmd = './crf_tag' + inp
     elif k == 'dnn-asr':
-        inp = ' ../model/asr.prototxt ../model/asr.caffemodel ../input/features.in'
+        inp = ' ../model/asr.prototxt ../model/asr.caffemodel 1 ../input/features.in'
         if plat == 'smt' or plat == 'cores':
             cmd = './dnn_asr ' + str(threads) + inp
         else:
@@ -66,7 +66,7 @@ def main( args ):
         return
 
     kernels = ['fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    kernels = ['fe', 'fd', 'regex', 'stemmer', 'crf', 'dnn-asr']
+    kernels = ['dnn-asr']
     platforms = ['baseline', 'cores', 'smt']
 
     # top directory of kernels
@@ -89,7 +89,7 @@ def main( args ):
             if plat == 'cores':
                 vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0,1,2,3 '
             elif plat == 'smt':
-                vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0,1,4,5 '
+                vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0,1,8,9 '
             else:
                 vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0 '
             cmd = vtune + ' ' + run_kernel(k, plat) + ' > %s.out 2> %s.err' % (fname, fname)

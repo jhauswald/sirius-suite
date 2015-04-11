@@ -25,11 +25,13 @@ def sirius_print(data, metrics):
         print '%s' % data[metrics[-1]]
 
 def main( args ):
-    kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    kernels = [ 'fe', 'fd', 'regex', 'stemmer', 'crf', 'dnn-asr']
+    kernels = [ 'fe', 'fd', 'gmm', 'dnn-asr','stemmer', 'crf', 'regex']
     # kernels = [ 'regex']
     platforms = ['baseline', 'smt', 'cores']
-    metrics = ['Platform', 'Kernel', 'CPI Rate', 'Front-end Bound', 'Bad Speculation', 'Retiring', 'Back-End Bound']
+    header  = ['Platform', 'Kernel']
+    # metrics = header + ['CPI Rate', 'Front-end Bound', 'Bad Speculation', 'Retiring', 'Back-End Bound']
+    # metrics = header + ['Memory Bound', 'Core Bound']
+    metrics = header + ['L1 Bound', 'L3 Bound', 'L3 Latency', 'DRAM Bound', 'Local DRAM', 'Remote DRAM', 'Store Bound']
 
     # top directory of kernels
     kdir = args[1]
@@ -42,7 +44,6 @@ def main( args ):
     for m in metrics[:-1]:
         sys.stdout.write('%s,' % m)
     else:
-        # sys.stdout.write('%s,' % metrics[-1])
         print '%s' % metrics[-1]
 
     data = {}
