@@ -1,10 +1,14 @@
 CXX=g++
 CXX_FLAGS = -O3 -DCPU_ONLY
-LINK_FLAGS = -lcaffe -lglog -lopenblas
+LINK_FLAGS = -lcaffe -lglog libopenblas-avx.a
+# LINK_FLAGS = -lcaffe -lglog libopenblas-avx.a
+LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl
+CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/
 
 THREADS = 4
 MODEL   = ../model/asr.prototxt
 WEIGHTS = ../model/asr.caffemodel
+PASSES  = 10
 INPUT   = ../input/features.in
 
 EXEC = dnn_asr
@@ -23,7 +27,7 @@ $(EXEC): $(OBJECTS) Makefile
 
 # test
 test: all
-	@./$(EXEC) $(THREADS) $(MODEL) $(WEIGHTS) $(INPUT)
+	@./$(EXEC) $(THREADS) $(MODEL) $(WEIGHTS) $(PASSES) $(INPUT)
 
 # To remove generated files
 clean:
