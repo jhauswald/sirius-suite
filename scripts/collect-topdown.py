@@ -53,7 +53,7 @@ def run_kernel (k, plat):
         else:
             cmd = './crf_tag' + inp
     elif k == 'dnn-asr':
-        inp = ' ../model/asr.prototxt ../model/asr.caffemodel 1 ../input/features.in'
+        inp = ' ../model/asr.prototxt ../model/asr.caffemodel ../input/features.in'
         if plat == 'smt' or plat == 'cores':
             cmd = './dnn_asr ' + str(threads) + inp
         else:
@@ -66,7 +66,6 @@ def main( args ):
         return
 
     kernels = ['fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    kernels = ['dnn-asr']
     platforms = ['baseline', 'cores', 'smt']
 
     # top directory of kernels
