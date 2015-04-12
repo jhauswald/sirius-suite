@@ -1,5 +1,5 @@
 CXX=g++
-CXX_FLAGS = -O3 -DCPU_ONLY
+CXX_FLAGS = -O2 -DCPU_ONLY
 LINK_FLAGS = -lcaffe -lglog libopenblas-avx.a
 # LINK_FLAGS = -lcaffe -lglog libopenblas-avx.a
 LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl

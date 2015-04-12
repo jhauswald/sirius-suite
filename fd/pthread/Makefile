@@ -1,5 +1,5 @@
 CXX = g++
-CXX_FLAGS = -O3
+CXX_FLAGS = -O2
 LINK_FLAGS = -lpthread \
 			 -lopencv_core \
 			 -lopencv_highgui \

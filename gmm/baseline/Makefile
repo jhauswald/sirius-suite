@@ -1,5 +1,5 @@
 CXX = gcc
-CXX_FLAGS  = -O3
+CXX_FLAGS  = -O2
 LINK_FLAGS =
 LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl -lm
 CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/

@@ -1,16 +1,16 @@
 CXX=g++
-CXX_FLAGS = -O3 -DCPU_ONLY
+CXX_FLAGS = -O2 -DCPU_ONLY
 # LINK_FLAGS = -lcaffe \
 # 			 -lopenblas \
 # 			 -lglog
 # LINK_FLAGS = -lcaffe \
 # 			 libopenblas-noavx.a \
 # 			 -lglog
-LINK_FLAGS = libcaffe-avx.a \
+LINK_FLAGS = libcaffe-noavx.a \
 			 -lprotobuf \
 			 -lgflags -lleveldb -lsnappy \
 			 -llmdb -lhdf5 -lhdf5_hl -lboost_thread -lpthread -lopencv_core -lopencv_imgproc \
-			 libopenblas-avx.a \
+			 libopenblas-noavx.a \
 			 -lglog
 # LINK_FLAGS = libcaffe-noavx.a \
 # 			 -lprotobuf \
