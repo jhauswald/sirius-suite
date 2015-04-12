@@ -1,7 +1,7 @@
 CXX = gcc
-CXX_FLAGS  = -O2 -ftree-vectorizer-verbose=2
+CXX_FLAGS  = -O3
 LINK_FLAGS =
-LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl
+LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl -lm
 CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/
 
 SCORES = 1
