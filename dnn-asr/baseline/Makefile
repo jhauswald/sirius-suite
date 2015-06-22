@@ -1,25 +1,15 @@
 CXX=g++
-CXX_FLAGS = -O2 -DCPU_ONLY
+CXX_FLAGS = -O2 -ftree-vectorize -mavx -mavx2 -mfma -ffast-math  -DCPU_ONLY 
 # LINK_FLAGS = -lcaffe \
 # 			 -lopenblas \
 # 			 -lglog
-# LINK_FLAGS = -lcaffe \
-# 			 libopenblas-noavx.a \
-# 			 -lglog
-LINK_FLAGS = libcaffe-noavx.a \
+LINK_FLAGS = -lcaffe \
 			 -lprotobuf \
 			 -lgflags -lleveldb -lsnappy \
 			 -llmdb -lhdf5 -lhdf5_hl -lboost_thread -lpthread -lopencv_core -lopencv_imgproc \
-			 libopenblas-noavx.a \
+			 libopenblas-avx.a \
 			 -lglog
-# LINK_FLAGS = libcaffe-noavx.a \
-# 			 -lprotobuf \
-# 			 -lgflags -lleveldb -lsnappy \
-# 			 -llmdb -lhdf5 -lhdf5_hl -lboost_thread -lpthread -lopencv_core -lopencv_imgproc \
-# 			 libopenblas-noavx.a \
-# 			 -lglog
-LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl
-CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/
+LINK_FLAGS += -lpthread -ldl
 
 MODEL   = ../model/asr.prototxt
 WEIGHTS = ../model/asr.caffemodel

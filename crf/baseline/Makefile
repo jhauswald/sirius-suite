@@ -1,7 +1,6 @@
 CXX = g++
-CXX_FLAGS  = -O2
-LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl
-CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/
+CXX_FLAGS  = -O2 -ftree-vectorize -mavx -mavx2 -mfma -ffast-math
+LINK_FLAGS += -lpthread -ldl
 
 MODEL    = ../input/model.la
 INPUT    = ../input/test-input.txt

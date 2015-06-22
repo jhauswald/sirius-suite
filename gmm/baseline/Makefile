@@ -1,8 +1,6 @@
 CXX = gcc
-CXX_FLAGS  = -O2
-LINK_FLAGS =
-LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -lpthread -ldl -lm
-CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/
+CXX_FLAGS  = -O2 -ftree-vectorize -mavx -mavx2 -mfma -ffast-math
+LINK_FLAGS = -lpthread -ldl -lm
 
 SCORES = 1
 INPUT  = ../input/gmm_data.txt

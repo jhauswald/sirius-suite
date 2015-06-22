@@ -1,6 +1,9 @@
 # Object files
 *.o
 
+# Libs
+*.a
+
 # Executables
 surf-fe
 surf-fd
@@ -20,3 +23,5 @@ dnn_asr
 *.err
 *.out
 *.report
+*.json
+*.insn

@@ -13,8 +13,6 @@
 #include "../../utils/pthreadman.h"
 #include "../../utils/timer.h"
 
-#include "ittnotify.h"
-
 /* Data */
 char **patts;
 char **questions;
@@ -68,7 +66,6 @@ int fill(FILE *f, char **toFill, int *bufLen, int len) {
 }
 
 int main(int argc, char *argv[]) {
-  __itt_pause();
   if (argc < 6) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
     fprintf(stderr, "Usage: %s [THREADS] [NUM PATTERNS] [PATTERN FILE] [NUM QUESTIONS] [QUESTION FILE]\n\n", argv[0]);
@@ -123,7 +120,6 @@ int main(int argc, char *argv[]) {
     caps[i] = z;
   }
   
-  __itt_resume();
   tic();
   int tids[NTHREADS];
   pthread_t threads[NTHREADS];
@@ -140,7 +136,6 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < NTHREADS; i++) sirius_pthread_join(threads[i], NULL);
 
   PRINT_STAT_DOUBLE("pthread_regex", toc());
-  __itt_pause();
 
   STATS_END();
 

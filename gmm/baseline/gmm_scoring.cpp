@@ -7,8 +7,6 @@
 #include "../../utils/timer.h"
 #include "../../utils/memoryman.h"
 
-#include "ittnotify.h"
-
 using namespace std;
 
 float *means_vect;
@@ -101,7 +99,6 @@ void computeScore_seq(float *feature_vect, float *means_vect, float *precs_vect,
 }
 
 int main(int argc, char *argv[]) {
-  __itt_pause();
   if (argc < 3) {
     fprintf(stderr, "[ERROR] Input file required.\n\n");
     fprintf(stderr, "Usage: %s [NUM SCORES] [INPUT FILE]\n\n", argv[0]);
@@ -199,13 +196,11 @@ int main(int argc, char *argv[]) {
 
   fclose(fp);
 
-  __itt_resume();
   tic();
   for(int i = 0; i < SCORES; ++i)
     computeScore_seq(feat_vect[i], means_vect, precs_vect, weight_vect,
         factor_vect, score_vect[i]);
   PRINT_STAT_DOUBLE("gmm", toc());
-  __itt_pause();
 
   STATS_END();
 

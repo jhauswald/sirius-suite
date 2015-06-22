@@ -11,11 +11,8 @@
 #include "../../utils/pthreadman.h"
 #include "../../utils/timer.h"
 
-#include "ittnotify.h"
-
 int NTHREADS;
-int iterations;
-
+int iterations; 
 float feature_vect[] = {2.240018,    2.2570236,    0.11304555,   -0.21307051,
                         0.8988138,   0.039065503,  0.023874786,  0.13153112,
                         0.15324382,  0.16986738,   -0.020297153, -0.26773554,
@@ -143,7 +140,6 @@ void *computeScore_thread(void *tid) {
 }
 
 int main(int argc, char *argv[]) {
-  __itt_pause();
   if (argc < 4) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
     fprintf(stderr, "Usage: %s [NUMBER OF THREADS] [SCORES] [INPUT FILE]\n\n", argv[0]);
@@ -239,7 +235,6 @@ int main(int argc, char *argv[]) {
 
   fclose(fp);
 
-  __itt_resume();
   tic();
   iterations = senone_size / NTHREADS;
   sirius_pthread_attr_init(&attr);
@@ -255,7 +250,6 @@ int main(int argc, char *argv[]) {
   PRINT_STAT_DOUBLE("pthread_gmm", toc());
 
   STATS_END();
-  __itt_pause();
 
 // write for correctness check
 #if TESTING

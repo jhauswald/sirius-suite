@@ -14,8 +14,6 @@
 
 #include "porter.h"
 
-#include "ittnotify.h"
-
 static char *s; /* buffer for words to be stemmed */
 
 #define INC 50          /* size units in which s is increased */
@@ -94,7 +92,6 @@ int load_data(int WORDS, struct stemmer **stem_list, FILE *f) {
 }
 
 int main(int argc, char *argv[]) {
-  __itt_pause();
   if (argc < 4) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
     fprintf(stderr, "Usage: %s [NUMBER OF THREADS] [WORDS] [INPUT FILE]\n\n", argv[0]);
@@ -124,7 +121,6 @@ int main(int argc, char *argv[]) {
 
   PRINT_STAT_INT("words", words);
 
-  __itt_resume();
   tic();
   int start, tids[NTHREADS];
   pthread_t threads[NTHREADS];
@@ -142,7 +138,6 @@ int main(int argc, char *argv[]) {
     sirius_pthread_join(threads[i], NULL);
   }
   PRINT_STAT_DOUBLE("pthread_stemmer", toc());
-  __itt_pause();
 
   STATS_END();
 

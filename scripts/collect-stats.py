@@ -2,8 +2,8 @@
 
 import sys, os, re, subprocess
 
-threads = 4
-overlap = 50
+threads = 2
+overlap = 15
 
 def shcmd(cmd):
     subprocess.call(cmd, shell=True)
@@ -65,9 +65,8 @@ def main( args ):
         print "Usage: ./collect-stats.py <top-directory of kernels> <# of runs>"
         return
 
-    kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    platforms = [ 'baseline', 'cores', 'smt' ]
-    platforms = [ 'cores' ]
+    kernels = [ 'fe', 'fd', 'gmm', 'dnn-asr', 'regex', 'stemmer', 'crf']
+    platforms = ['baseline', 'smt']
 
     # top directory of kernels
     kdir = args[1]
@@ -75,10 +74,6 @@ def main( args ):
 
     # how many times to run each kernel
     LOOP = int(args[2])
-
-    # remove GPU if no NVCC installed
-    # if shcom("which nvcc") == "":
-    #     platforms = [ 'baseline', 'pthread']
 
     # for each kernel and platform.
     root = os.getcwd()
@@ -88,18 +83,17 @@ def main( args ):
         kroot = os.getcwd() 
         for plat in platforms:
             fname = 'sirius-suite-%s' % plat
-            if plat == 'smt' or plat == 'cores':
+            if plat == 'smt' or plat == 'cores' or plat == 'pthread':
                 os.chdir('pthread')
             else:
                 os.chdir(plat)
             for i in range(0, LOOP):
-                if plat == 'cores':
-                    task = 'taskset -c 0,1,2,3 '
-                elif plat == 'smt':
-                    task = 'taskset -c 0,1,4,5 '
+                if plat == 'smt':
+                    task = 'taskset -c 0,8 '
+                elif plat == 'cores':
+                    task = 'taskset -c 0,1 '
                 else:
                     task = 'taskset -c 0 '
-                # cmd = task + ' ' + run_kernel(k, plat) + ' > %s.out 2> %s.err' % (fname, fname)
                 cmd = task + ' ' + run_kernel(k, plat)
                 shcmd(cmd)
             os.chdir(kroot)

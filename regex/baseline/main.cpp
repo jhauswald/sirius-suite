@@ -9,8 +9,6 @@
 #include "../../utils/timer.h"
 #include "../../utils/memoryman.h"
 
-#include "ittnotify.h"
-
 int fill(FILE *f, char **toFill, int *bufLen, int len) {
   int i = 0;
 
@@ -35,7 +33,6 @@ int fill(FILE *f, char **toFill, int *bufLen, int len) {
 }
 
 int main(int argc, char *argv[]) {
-  __itt_pause();
   if (argc < 5) {
     fprintf(stderr, "[ERROR] Invalid arguments provided.\n\n");
     fprintf(stderr, "Usage: %s [NUM PATTERNS] [PATTERN FILE] [NUM QUESTIONS] [QUESTION FILE]\n\n", argv[0]);
@@ -92,7 +89,6 @@ int main(int argc, char *argv[]) {
     caps[i] = z;
   }
 
-  __itt_resume();
   tic();
   for (int i = 0; i < numPatterns; ++i) {
     for (int k = 0; k < numQs; ++k) {
@@ -101,7 +97,6 @@ int main(int argc, char *argv[]) {
     }
   }
   PRINT_STAT_DOUBLE("regex", toc());
-  __itt_pause();
 
 #ifdef TESTING
   fclose(f);

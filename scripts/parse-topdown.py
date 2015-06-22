@@ -25,13 +25,15 @@ def sirius_print(data, metrics):
         print '%s' % data[metrics[-1]]
 
 def main( args ):
+    if len(args) < 2:
+        print "Usage: ./collect-stats.py <top-directory of kernels>"
+        return
     kernels = [ 'fe', 'fd', 'gmm', 'dnn-asr','stemmer', 'crf', 'regex']
-    # kernels = [ 'regex']
-    platforms = ['baseline', 'smt', 'cores']
+    platforms = ['smt']
     header  = ['Platform', 'Kernel']
-    # metrics = header + ['CPI Rate', 'Front-end Bound', 'Bad Speculation', 'Retiring', 'Back-End Bound']
-    # metrics = header + ['Memory Bound', 'Core Bound']
-    metrics = header + ['L1 Bound', 'L3 Bound', 'L3 Latency', 'DRAM Bound', 'Local DRAM', 'Remote DRAM', 'Store Bound']
+    metrics = header + ['CPI Rate', 'Front-end Bound', 'Bad Speculation', 'Retiring', 'Back-End Bound',
+                        'Memory Bound', 'Core Bound', 'Back-end Sum', 'Full Sum']
+    # metrics.append(header + ['L1 Bound', 'L3 Bound', 'L3 Latency', 'DRAM Bound', 'Local DRAM', 'Remote DRAM', 'Store Bound']
 
     # top directory of kernels
     kdir = args[1]
@@ -61,6 +63,9 @@ def main( args ):
                 data = get_data(fname, metrics)
                 data['Kernel'] = k
                 data['Platform'] = plat
+                data['Back-end Sum'] = float(data['Core Bound']) + float(data['Memory Bound'])
+                data['Full Sum'] = float(data['Front-end Bound']) + float(data['Bad Speculation']) \
+                              + float(data['Retiring']) + float(data['Back-End Bound'])
                 sirius_print(data, metrics)
             os.chdir(kroot)
         os.chdir(root)

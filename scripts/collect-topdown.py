@@ -2,7 +2,7 @@
 
 import sys, os, re, subprocess
 
-threads = 4
+threads = 2
 overlap = 50
 
 def shcmd(cmd):
@@ -66,7 +66,8 @@ def main( args ):
         return
 
     kernels = ['fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
-    platforms = ['baseline', 'cores', 'smt']
+    # kernels = ['regex']
+    platforms = ['baseline', 'smt']
 
     # top directory of kernels
     kdir = args[1]
@@ -86,11 +87,12 @@ def main( args ):
             else:
                 os.chdir(plat)
             if plat == 'cores':
-                vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0,1,2,3 '
+                vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0,1 '
             elif plat == 'smt':
-                vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0,1,8,9 '
+                vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0,8 '
             else:
                 vtune = 'amplxe-cl -collect general-exploration -start-paused -quiet taskset -c 0 '
+                # vtune = 'amplxe-cl -collect general-exploration -quiet taskset -c 0 '
             cmd = vtune + ' ' + run_kernel(k, plat) + ' > %s.out 2> %s.err' % (fname, fname)
             print cmd
             shcmd(cmd)

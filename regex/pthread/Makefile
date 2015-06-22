@@ -1,8 +1,7 @@
 CXX = g++
 LINK_FLAGS = -lpthread
-CXX_FLAGS = -O2 -fpermissive
-LINK_FLAGS += /opt/intel/vtune_amplifier_xe/lib64/libittnotify.a -ldl
-CXX_FLAGS  += -I/opt/intel/vtune_amplifier_xe/include/
+CXX_FLAGS =  -O2 -ftree-vectorize -mavx -mavx2 -mfma -ffast-math -fpermissive
+LINK_FLAGS += -ldl
 
 THREADS       = 4
 NUM_PATTERNS  = 100

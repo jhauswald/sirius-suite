@@ -1,6 +1,6 @@
 CUDA=/usr/local/cuda
 CXX=g++
-CXX_FLAGS = -O2 -I$(CUDA)/include
+CXX_FLAGS = simplee -I$(CUDA)/include
 LINK_FLAGS = -L$(CUDA)/lib64 \
 			 -lcudart \
 			 -lcaffe \

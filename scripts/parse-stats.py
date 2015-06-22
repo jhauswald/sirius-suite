@@ -4,15 +4,19 @@ import sys, os, re, subprocess, json
 from collections import defaultdict
 import numpy as np
 
+def shcmd(cmd):
+    subprocess.call(cmd, shell=True)
+
 def main( args ):
     if len(args) < 2:
         print "Usage: ./parse-stats.py <.json file>"
         return
 
-    file = args[1]
-    data = json.loads(open(file).read())
+    f = args[1]
+    shcmd('./json-format.sh %s' % f)
+    data = json.loads(open(f).read())
 
-    kernels = [ 'fe', 'fd', 'gmm', 'regex', 'stemmer', 'crf', 'dnn-asr']
+    kernels = [ 'fe', 'fd', 'gmm', 'dnn-asr', 'regex', 'stemmer', 'crf']
     platforms = [ 'baseline', 'pthread' ]
 
     # dictionary of lists
@@ -36,21 +40,15 @@ def main( args ):
         mn[k] = min(v)
         mx[k] = max(v)
 
-    print 'kernel,platform,mean,median,stddev,min,max,speedup'
+    print 'kernel,mean,median,stddev,min,max,mean-pth,median-pth,stddev-pth,min-pth,max-pth,speedup'
     for base in kernels:
-        print "%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f" % (base, 'baseline', avg[base], median[base],
-                                               stddev[base], mn[base],
-                                               mx[base], float(avg[base]/avg[base]))
         pth = 'pthread_' + base
-        print "%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f" % (base, 'pthread', avg[pth], median[pth],
+        print "%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f" % \
+                                               (base, avg[base], median[base],
+                                               stddev[base], mn[base], mx[base],
+                                               avg[pth], median[pth],
                                                stddev[pth], mn[pth],
-                                               mx[pth],float(avg[base]/avg[pth]))
-        # gpu = 'gpu_' + base
-        # if gpu == 'gpu_regex' or gpu == 'gpu_crf':
-        #     continue
-        # print "%s,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f" % (base, 'gpu', avg[gpu], median[gpu],
-        #                                        stddev[gpu], mn[gpu],
-        #                                        mx[gpu], float(avg[base]/avg[gpu]))
+                                               mx[pth], float(avg[base]/avg[pth]))
 
 if __name__=='__main__':
     sys.exit(main(sys.argv))
